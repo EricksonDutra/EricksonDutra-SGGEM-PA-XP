@@ -18,7 +18,7 @@ pickleshare==0.7.5
 platformdirs==4.2.0
 prompt-toolkit==3.0.36
 pure-eval==0.2.2
-Pygments==2.13.0
+Pygments==2.15.0
 pyodbc==5.2.0
 pytz==2024.2
 six==1.16.0

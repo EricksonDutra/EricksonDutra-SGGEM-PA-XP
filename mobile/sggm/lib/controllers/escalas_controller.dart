@@ -5,7 +5,8 @@ import 'package:http/http.dart' as http;
 
 class EscalasProvider extends ChangeNotifier {
   List<Escalas> _escalas = [];
-  final String apiUrl = 'http://127.0.0.1:8000/api/escalas/';
+  // final String apiUrl = 'http://127.0.0.1:8000/api/escalas/';
+  final String apiUrl = 'http://192.168.100.9:8000/api/escalas/';
 
   List<Escalas> get escalas => _escalas;
 
@@ -16,7 +17,7 @@ class EscalasProvider extends ChangeNotifier {
       _escalas = data.map((item) => Escalas.fromJson(item)).toList();
       notifyListeners();
     } else {
-      throw Exception('Falha ao carregar músicos.');
+      throw Exception('Falha ao carregar escalas.');
     }
   }
 

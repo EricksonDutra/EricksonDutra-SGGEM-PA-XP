@@ -5,7 +5,8 @@ import 'package:http/http.dart' as http;
 
 class MusicosProvider extends ChangeNotifier {
   List<Musicos> _musicos = [];
-  final String apiUrl = 'http://127.0.0.1:8000/api/musicos/';
+  // final String apiUrl = 'http://127.0.0.1:8000/api/musicos/';
+  final String apiUrl = 'http://192.168.100.9:8000/api/musicos/';
 
   List<Musicos> get musicos => _musicos;
 

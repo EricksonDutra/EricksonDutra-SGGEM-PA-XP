@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:sggm/controllers/escalas_controller.dart';
 import 'package:sggm/controllers/eventos_controller.dart';
 import 'package:sggm/controllers/musicos_controller.dart';
+import 'package:sggm/views/login_page.dart';
 import 'home_page.dart';
 
 void main() {
@@ -25,7 +26,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       title: 'Eventos App',
-      home: HomePage(),
+      home: LoginPage(),
       debugShowCheckedModeBanner: false,
     );
   }

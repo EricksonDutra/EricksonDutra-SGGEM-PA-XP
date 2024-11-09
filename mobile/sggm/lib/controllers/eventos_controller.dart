@@ -5,7 +5,8 @@ import 'package:sggm/models/eventos.dart';
 
 class EventoProvider with ChangeNotifier {
   List<Eventos> _eventos = [];
-  final String apiUrl = 'http://127.0.0.1:8000/api/eventos/';
+  // final String apiUrl = 'http://127.0.0.1:8000/api/eventos/';
+  final String apiUrl = 'http://192.168.100.9:8000/api/eventos/';
 
   List<Eventos> get eventos => _eventos;
 

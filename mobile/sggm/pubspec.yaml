@@ -19,3 +19,13 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/
+
+  fonts:
+    - family: Inknut_Antiqua
+      fonts:
+        - asset: assets/fonts/Inknut_Antiqua/InknutAntiqua-Regular.ttf
+        - asset: assets/fonts/Inknut_Antiqua/InknutAntiqua-Light.ttf
+        - asset: assets/fonts/Roboto/Roboto-Regular.ttf

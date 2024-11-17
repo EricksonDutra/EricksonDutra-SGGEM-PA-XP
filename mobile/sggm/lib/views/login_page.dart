@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sggm/views/initial_page.dart';
 import 'package:sggm/views/widgets/input_widget.dart';
 
 class LoginPage extends StatelessWidget {
@@ -32,6 +33,13 @@ class LoginPage extends StatelessWidget {
                   obscureText: true, // Oculta o texto da senha
                 ),
               ),
+              TextButton(
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (bc) => const InitialPage())),
+                child: const Text(
+                  'Entrar',
+                  style: TextStyle(color: Colors.white, fontFamily: 'Inknut_Antiqua'),
+                ),
+              )
             ]),
           ],
         ),

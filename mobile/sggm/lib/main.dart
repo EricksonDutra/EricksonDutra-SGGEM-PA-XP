@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:sggm/controllers/escalas_controller.dart';
 import 'package:sggm/controllers/eventos_controller.dart';
 import 'package:sggm/controllers/musicos_controller.dart';
+import 'package:sggm/views/initial_page.dart';
 import 'package:sggm/views/login_page.dart';
 import 'home_page.dart';
 
@@ -24,10 +25,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       title: 'Eventos App',
-      home: LoginPage(),
+      home: const LoginPage(),
       debugShowCheckedModeBanner: false,
+      themeMode: ThemeMode.dark,
+      theme: ThemeData.dark(useMaterial3: true),
     );
   }
 }

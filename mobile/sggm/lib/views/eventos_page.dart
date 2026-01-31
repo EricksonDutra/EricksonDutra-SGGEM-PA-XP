@@ -11,58 +11,163 @@ class EventosPage extends StatefulWidget {
 }
 
 class _EventosPageState extends State<EventosPage> {
-  late Future<void> _carregarEventosFuture;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _carregarEventosFuture = Provider.of<EventoProvider>(context, listen: false).listarEventos();
+    // Dispara a busca assim que a tela é montada
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _carregarEventos();
+    });
+  }
+
+  Future<void> _carregarEventos() async {
+    setState(() => _isLoading = true);
+    try {
+      await Provider.of<EventoProvider>(context, listen: false).listarEventos();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao carregar eventos: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  // Função auxiliar para exibir um formulário simples de adição (para teste rápido)
+  void _mostrarDialogoAdicionar(BuildContext context) {
+    final nomeController = TextEditingController();
+    final localController = TextEditingController();
+    final dataController = TextEditingController(text: DateTime.now().toIso8601String());
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Novo Evento'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: nomeController, decoration: const InputDecoration(labelText: 'Nome')),
+            TextField(controller: localController, decoration: const InputDecoration(labelText: 'Local')),
+            TextField(controller: dataController, decoration: const InputDecoration(labelText: 'Data (ISO)')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancelar')),
+          ElevatedButton(
+            onPressed: () {
+              final novoEvento = Evento(
+                nome: nomeController.text,
+                local: localController.text,
+                dataEvento: dataController.text,
+                descricao: 'Criado via App',
+              );
+              
+              // Chama o provider para salvar no Django
+              Provider.of<EventoProvider>(context, listen: false)
+                  .adicionarEvento(novoEvento)
+                  .then((_) => Navigator.of(ctx).pop())
+                  .catchError((e) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro: $e')));
+                  });
+            },
+            child: const Text('Salvar'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final eventoProvider = Provider.of<EventoProvider>(context);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Eventos'),
-      ),
-      body: FutureBuilder(
-        future: _carregarEventosFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          return ListView.builder(
-            itemCount: eventoProvider.eventos.length,
-            itemBuilder: (context, index) {
-              final evento = eventoProvider.eventos[index];
-              return ListTile(
-                title: Text(evento.nome!),
-                subtitle: Text(evento.descricao!),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () {
-                    eventoProvider.deletarEvento(evento.eventoId!);
-                  },
-                ),
-              );
-            },
-          );
-        },
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _carregarEventos,
+          )
+        ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          final novoEvento = Eventos(
-            nome: 'Novo Evento',
-            dataEvento: DateTime.now().toString(),
-            local: 'Local Teste',
-            descricao: 'Descrição Teste',
-          );
-          eventoProvider.adicionarEvento(novoEvento);
-        },
+        onPressed: () => _mostrarDialogoAdicionar(context),
         child: const Icon(Icons.add),
       ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Consumer<EventoProvider>(
+              builder: (context, provider, child) {
+                if (provider.eventos.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      'Nenhum evento encontrado.\nVerifique a conexão com o Django.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  );
+                }
+
+                return RefreshIndicator(
+                  onRefresh: _carregarEventos,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(8.0),
+                    itemCount: provider.eventos.length,
+                    itemBuilder: (context, index) {
+                      final evento = provider.eventos[index];
+                      return Card(
+                        elevation: 3,
+                        margin: const EdgeInsets.symmetric(vertical: 6),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Theme.of(context).primaryColor,
+                            child: const Icon(Icons.event, color: Colors.white),
+                          ),
+                          title: Text(
+                            evento.nome,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
+                                  const SizedBox(width: 4),
+                                  // Exibindo apenas o início da string de data para simplificar
+                                  Text(evento.dataEvento.split('T')[0]),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  const Icon(Icons.location_on, size: 14, color: Colors.grey),
+                                  const SizedBox(width: 4),
+                                  Text(evento.local),
+                                ],
+                              ),
+                            ],
+                          ),
+                          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                          onTap: () {
+                            // Futuro: Navegar para detalhes
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
     );
   }
 }

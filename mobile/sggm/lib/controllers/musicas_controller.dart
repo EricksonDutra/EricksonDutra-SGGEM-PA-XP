@@ -1,16 +1,15 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:sggm/util/constants.dart';
+import 'package:sggm/models/musicas.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class EscalasProvider extends ChangeNotifier {
-  List<Escalas> _escalas = [];
-  final String apiUrl = AppConstants.escalasEndpoint;
+class MusicasProvider extends ChangeNotifier {
+  List<Musica> _musicas = [];
 
-  // IP do WSL2 (o mesmo usado nos outros controllers)
-  static const String _baseUrl = 'http://172.19.141.245:8000/api/escalas/';
+  static const String _baseUrl = 'http://172.19.141.245:8000/api/musicas/';
 
-  List<Escala> get escalas => _escalas;
+  List<Musica> get musicos => _musicas;
 
   Future<Map<String, String>> _getHeaders() async {
     final prefs = await SharedPreferences.getInstance();
@@ -21,57 +20,54 @@ class EscalasProvider extends ChangeNotifier {
     };
   }
 
-  Future<void> listarEscalas() async {
+  Future<void> listarMusicas() async {
     final headers = await _getHeaders();
-
     try {
       final response = await http.get(Uri.parse(_baseUrl), headers: headers);
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(utf8.decode(response.bodyBytes));
-        _escalas = data.map((item) => Escala.fromJson(item)).toList();
+        _musicas = data.map((item) => Musica.fromJson(item)).toList();
         notifyListeners();
       } else {
-        throw Exception('Falha ao carregar escalas: ${response.statusCode}');
+        throw Exception('Erro ao carregar músicas: ${response.statusCode}');
       }
     } catch (e) {
-      print("Erro ao listar escalas: $e");
+      print("Erro Provider Músicas: $e");
       rethrow;
     }
   }
 
-  Future<void> adicionarEscala(Escala escala) async {
+  Future<void> adicionarMusica(Musica musica) async {
     final headers = await _getHeaders();
 
     try {
       final response = await http.post(
         Uri.parse(_baseUrl),
         headers: headers,
-        body: json.encode(escala.toJson()),
+        body: json.encode(musica.toJson()),
       );
 
       if (response.statusCode == 201) {
-        final novaEscala = Escala.fromJson(json.decode(utf8.decode(response.bodyBytes)));
-        _escalas.add(novaEscala);
+        final novaMusica = Musica.fromJson(json.decode(utf8.decode(response.bodyBytes)));
+        _musicas.add(novaMusica);
         notifyListeners();
       } else {
-        throw Exception('Falha ao criar escala: ${response.body}');
+        throw Exception('Falha ao adicionar: ${response.body}');
       }
     } catch (e) {
       rethrow;
     }
   }
 
-  Future<void> deletarEscala(int id) async {
+  Future<void> deletarMusica(int id) async {
     final headers = await _getHeaders();
-
     final response = await http.delete(Uri.parse('$_baseUrl$id/'), headers: headers);
-
     if (response.statusCode >= 200 && response.statusCode <= 299) {
-      _escalas.removeWhere((escala) => escala.id == id);
+      _musicas.removeWhere((m) => m.id == id);
       notifyListeners();
     } else {
-      throw Exception('Falha ao deletar escala');
+      throw Exception('Falha ao deletar música');
     }
   }
 }

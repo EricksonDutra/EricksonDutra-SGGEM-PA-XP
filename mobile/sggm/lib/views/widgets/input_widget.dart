@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-Widget buildTextField({required String labelText, bool obscureText = false}) {
+Widget buildTextField( {required TextEditingController controller, required String labelText, bool obscureText = false}) {
   return TextField(
+    controller: controller,
     obscureText: obscureText,
     textAlign: TextAlign.center,
     decoration: InputDecoration(

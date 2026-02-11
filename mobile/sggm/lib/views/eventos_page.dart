@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sggm/controllers/auth_controller.dart';
 import 'package:sggm/controllers/eventos_controller.dart';
 import 'package:sggm/models/eventos.dart';
+import 'evento_detalhes_page.dart';
 
 class EventosPage extends StatefulWidget {
   const EventosPage({super.key});
@@ -16,7 +18,7 @@ class _EventosPageState extends State<EventosPage> {
   @override
   void initState() {
     super.initState();
-    // Dispara a busca assim que a tela é montada
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _carregarEventos();
     });
@@ -64,20 +66,21 @@ class _EventosPageState extends State<EventosPage> {
           TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancelar')),
           ElevatedButton(
             onPressed: () {
+              String dataFinal = dataController.text;
               final novoEvento = Evento(
                 nome: nomeController.text,
                 local: localController.text,
-                dataEvento: dataController.text,
+                dataEvento: dataFinal,
                 descricao: 'Criado via App',
               );
-              
+
               // Chama o provider para salvar no Django
               Provider.of<EventoProvider>(context, listen: false)
                   .adicionarEvento(novoEvento)
                   .then((_) => Navigator.of(ctx).pop())
                   .catchError((e) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro: $e')));
-                  });
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro: $e')));
+              });
             },
             child: const Text('Salvar'),
           ),
@@ -88,6 +91,7 @@ class _EventosPageState extends State<EventosPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isLider = Provider.of<AuthProvider>(context).isLider;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Eventos'),
@@ -99,10 +103,12 @@ class _EventosPageState extends State<EventosPage> {
           )
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _mostrarDialogoAdicionar(context),
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: isLider
+          ? FloatingActionButton(
+              onPressed: () => _mostrarDialogoAdicionar(context),
+              child: const Icon(Icons.add),
+            )
+          : null,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Consumer<EventoProvider>(
@@ -159,7 +165,12 @@ class _EventosPageState extends State<EventosPage> {
                           ),
                           trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                           onTap: () {
-                            // Futuro: Navegar para detalhes
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => EventoDetalhesPage(evento: evento),
+                              ),
+                            );
                           },
                         ),
                       );

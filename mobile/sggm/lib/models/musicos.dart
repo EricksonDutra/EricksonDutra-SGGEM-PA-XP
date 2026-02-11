@@ -1,49 +1,43 @@
-class Musicos {
-  int? _musicoId;
-  String? _nome;
-  String? _telefone;
-  String? _email;
-  String? _endereco;
+class Musico {
+  final int? id; // Backend envia 'id', não 'musicoId'
+  final String nome;
+  final String telefone;
+  final String email;
+  final String? endereco;
+  final String? instrumentoPrincipal; // Novo campo que criamos no Django
 
-  Musicos({int? musicoId, String? nome, String? telefone, String? email, String? endereco}) {
-    if (musicoId != null) {
-      _musicoId = musicoId;
-    }
-    if (nome != null) {
-      _nome = nome;
-    }
-    if (telefone != null) {
-      _telefone = telefone;
-    }
-    if (email != null) {
-      _email = email;
-    }
-    if (endereco != null) {
-      _endereco = endereco;
-    }
-  }
-  int? get musicoId => _musicoId;
-  set musicoId(int? musicoId) => _musicoId = musicoId;
-  set nome(String? nome) => _nome = nome;
-  set telefone(String? telefone) => _telefone = telefone;
-  set email(String? email) => _email = email;
-  set endereco(String? endereco) => _endereco = endereco;
+  Musico({
+    this.id,
+    required this.nome,
+    required this.telefone,
+    required this.email,
+    this.endereco,
+    this.instrumentoPrincipal,
+  });
 
-  Musicos.fromJson(Map<String, dynamic> json) {
-    _musicoId = json['musicoId'];
-    _nome = json['nome'];
-    _telefone = json['telefone'];
-    _email = json['email'];
-    _endereco = json['endereco'];
+  // Mapeia do Python (snake_case) para Dart
+  factory Musico.fromJson(Map<String, dynamic> json) {
+    return Musico(
+      id: json['id'],
+      nome: json['nome'],
+      telefone: json['telefone'],
+      email: json['email'],
+      endereco: json['endereco'],
+      // Mapeia o campo novo se existir
+      instrumentoPrincipal: json['instrumento_principal'],
+    );
   }
 
+  // Mapeia do Dart para Python (snake_case)
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['musicoId'] = _musicoId;
-    data['nome'] = _nome;
-    data['telefone'] = _telefone;
-    data['email'] = _email;
-    data['endereco'] = _endereco;
-    return data;
+    return {
+      if (id != null) 'id': id,
+      'nome': nome,
+      'telefone': telefone,
+      'email': email,
+      'endereco': endereco,
+      // Envia no formato que o Django espera
+      'instrumento_principal': instrumentoPrincipal,
+    };
   }
 }

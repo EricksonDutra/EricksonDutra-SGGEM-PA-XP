@@ -1,67 +1,94 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:sggm/models/musicos.dart';
 import 'package:http/http.dart' as http;
+import 'package:sggm/models/musicos.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MusicosProvider extends ChangeNotifier {
-  List<Musicos> _musicos = [];
-  // final String apiUrl = 'http://127.0.0.1:8000/api/musicos/';
-  final String apiUrl = 'http://192.168.100.9:8000/api/musicos/';
+  List<Musico> _musicos = [];
 
-  List<Musicos> get musicos => _musicos;
+  static const String _baseUrl = 'http://172.19.141.245:8000/api/musicos/';
+
+  List<Musico> get musicos => _musicos;
+
+  Future<Map<String, String>> _getHeaders() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    return {
+      'Content-Type': 'application/json; charset=UTF-8',
+      'Authorization': 'Bearer $token', //
+    };
+  }
 
   Future<void> listarMusicos() async {
-    final response = await http.get(Uri.parse(apiUrl));
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      _musicos = data.map((item) => Musicos.fromJson(item)).toList();
-      notifyListeners();
-    } else {
-      throw Exception('Falha ao carregar músicos.');
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(Uri.parse(_baseUrl), headers: headers);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(utf8.decode(response.bodyBytes));
+        _musicos = data.map((item) => Musico.fromJson(item)).toList();
+        notifyListeners();
+      } else {
+        throw Exception('Falha ao carregar músicos: ${response.statusCode}');
+      }
+    } catch (e) {
+      print("Erro listar músicos: $e");
+      rethrow;
     }
   }
 
-  // Método para adicionar um musico
-  Future<void> adicionarEvento(Musicos musico) async {
-    final response = await http.post(
-      Uri.parse(apiUrl),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode(musico.toJson()),
-    );
-    if (response.statusCode == 201) {
-      _musicos.add(musico);
-      notifyListeners();
-    } else {
-      throw Exception('Falha ao adicionar musico');
+  Future<void> adicionarMusico(Musico musico) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        Uri.parse(_baseUrl),
+        headers: headers,
+        body: json.encode(musico.toJson()),
+      );
+
+      if (response.statusCode == 201) {
+        final novoMusico = Musico.fromJson(json.decode(utf8.decode(response.bodyBytes)));
+        _musicos.add(novoMusico);
+        notifyListeners();
+      } else {
+        throw Exception('Falha ao adicionar: ${response.body}');
+      }
+    } catch (e) {
+      rethrow;
     }
   }
 
-  // Método para atualizar um musico
-  Future<void> atualizarEvento(int id, Musicos novoMusico) async {
+  Future<void> atualizarMusico(int id, Musico novoMusico) async {
+    final headers = await _getHeaders();
+
     final response = await http.put(
-      Uri.parse('$apiUrl/$id'),
-      headers: {'Content-Type': 'application/json'},
+      Uri.parse('$_baseUrl$id/'), // Atenção à barra no final
+      headers: headers,
       body: json.encode(novoMusico.toJson()),
     );
+
     if (response.statusCode >= 200 && response.statusCode <= 299) {
-      final index = _musicos.indexWhere((musico) => musico.musicoId == id);
+      final index = _musicos.indexWhere((musico) => musico.id == id);
       if (index != -1) {
         _musicos[index] = novoMusico;
         notifyListeners();
       }
     } else {
-      throw Exception('Falha ao atualizar musico');
+      throw Exception('Falha ao atualizar músico: ${response.body}');
     }
   }
 
-  // Método para deletar um musico
-  Future<void> deletarEvento(int id) async {
-    final response = await http.delete(Uri.parse('$apiUrl$id/'));
+  Future<void> deletarMusico(int id) async {
+    final headers = await _getHeaders();
+
+    final response = await http.delete(Uri.parse('$_baseUrl$id/'), headers: headers);
+
     if (response.statusCode >= 200 && response.statusCode <= 299) {
-      _musicos.removeWhere((musico) => musico.musicoId == id);
+      _musicos.removeWhere((musico) => musico.id == id);
       notifyListeners();
     } else {
-      throw Exception('Falha ao deletar musico');
+      throw Exception('Falha ao deletar músico');
     }
   }
 }

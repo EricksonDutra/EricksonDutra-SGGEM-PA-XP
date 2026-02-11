@@ -1,42 +1,39 @@
-class Musicas {
-  int? _musicaId;
-  String? _nome;
-  String? _compositor;
-  String? _duracao;
+class Musica {
+  final int? id;
+  final String titulo;
+  final String artista;
+  final String? tom;
+  final String? linkCifra;
+  final String? linkYoutube;
 
-  Musicas({int? musicaId, String? nome, String? compositor, String? duracao}) {
-    if (musicaId != null) {
-      _musicaId = musicaId;
-    }
-    if (nome != null) {
-      _nome = nome;
-    }
-    if (compositor != null) {
-      _compositor = compositor;
-    }
-    if (duracao != null) {
-      _duracao = duracao;
-    }
-  }
+  Musica({
+    this.id,
+    required this.titulo,
+    required this.artista,
+    this.tom,
+    this.linkCifra,
+    this.linkYoutube,
+  });
 
-  set musicaId(int? musicaId) => _musicaId = musicaId;
-  set nome(String? nome) => _nome = nome;
-  set compositor(String? compositor) => _compositor = compositor;
-  set duracao(String? duracao) => _duracao = duracao;
-
-  Musicas.fromJson(Map<String, dynamic> json) {
-    _musicaId = json['musicaId'];
-    _nome = json['nome'];
-    _compositor = json['compositor'];
-    _duracao = json['duracao'];
+  factory Musica.fromJson(Map<String, dynamic> json) {
+    return Musica(
+      id: json['id'],
+      titulo: json['titulo'] ?? 'Sem Título',
+      artista: json['artista'] ?? 'Desconhecido',
+      tom: json['tom'], // Pode ser null
+      linkCifra: json['link_cifra'],
+      linkYoutube: json['link_youtube'],
+    );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['musicaId'] = _musicaId;
-    data['nome'] = _nome;
-    data['compositor'] = _compositor;
-    data['duracao'] = _duracao;
-    return data;
+    return {
+      if (id != null) 'id': id,
+      'titulo': titulo,
+      'artista': artista,
+      'tom': tom,
+      'link_cifra': (linkCifra != null && linkCifra!.isEmpty) ? null : linkCifra,
+      'link_youtube': (linkYoutube != null && linkYoutube!.isEmpty) ? null : linkYoutube,
+    };
   }
 }

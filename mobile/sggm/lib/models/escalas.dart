@@ -1,46 +1,46 @@
-class Escalas {
-  int? _escalaId;
-  String? _dataEscala;
-  int? _musico;
-  int? _evento;
+class Escala {
+  final int? id;
+  final int musicoId; // Para envio ao Backend (FK)
+  final int eventoId; // Para envio ao Backend (FK)
+  final String? musicoNome; // Apenas leitura (vem do Serializer)
+  final String? eventoNome; // Apenas leitura (vem do Serializer)
+  final String instrumentoNoEvento;
+  final String? observacao;
 
-  Escalas({int? escalaId, String? dataEscala, int? musico, int? evento}) {
-    if (escalaId != null) {
-      _escalaId = escalaId;
-    }
-    if (dataEscala != null) {
-      _dataEscala = dataEscala;
-    }
-    if (musico != null) {
-      _musico = musico;
-    }
-    if (evento != null) {
-      _evento = evento;
-    }
-  }
+  Escala({
+    this.id,
+    required this.musicoId,
+    required this.eventoId,
+    this.musicoNome,
+    this.eventoNome,
+    this.instrumentoNoEvento = '',
+    this.observacao,
+  });
 
-  int? get escalaId => _escalaId;
-  set escalaId(int? escalaId) => _escalaId = escalaId;
-  String? get dataEscala => _dataEscala;
-  set dataEscala(String? dataEscala) => _dataEscala = dataEscala;
-  int? get musico => _musico;
-  set musico(int? musico) => _musico = musico;
-  int? get evento => _evento;
-  set evento(int? evento) => _evento = evento;
+  factory Escala.fromJson(Map<String, dynamic> json) {
+    return Escala(
+      id: json['id'],
+      // O Backend envia 'musico' e 'evento' como IDs (Foreign Keys)
+      musicoId: json['musico'],
+      eventoId: json['evento'],
 
-  Escalas.fromJson(Map<String, dynamic> json) {
-    _escalaId = json['escalaId'];
-    _dataEscala = json['dataEscala'];
-    _musico = json['musico'];
-    _evento = json['evento'];
+      // Campos extras que adicionamos no Serializer (read_only)
+      musicoNome: json['musico_nome'],
+      eventoNome: json['evento_nome'],
+
+      // Snake case padrão Python
+      instrumentoNoEvento: json['instrumento_no_evento'] ?? '',
+      observacao: json['observacao'],
+    );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['escalaId'] = _escalaId;
-    data['dataEscala'] = _dataEscala;
-    data['musico'] = _musico;
-    data['evento'] = _evento;
-    return data;
+    return {
+      if (id != null) 'id': id,
+      'musico': musicoId,
+      'evento': eventoId,
+      'instrumento_no_evento': instrumentoNoEvento,
+      'observacao': observacao ?? '',
+    };
   }
 }

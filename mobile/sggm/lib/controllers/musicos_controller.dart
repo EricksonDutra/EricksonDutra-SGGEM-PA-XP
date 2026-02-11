@@ -2,11 +2,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:sggm/models/musicos.dart';
 import 'package:http/http.dart' as http;
+import 'package:sggm/util/constants.dart';
 
 class MusicosProvider extends ChangeNotifier {
   List<Musicos> _musicos = [];
-  // final String apiUrl = 'http://127.0.0.1:8000/api/musicos/';
-  final String apiUrl = 'http://192.168.100.9:8000/api/musicos/';
+  final String apiUrl = AppConstants.musicosEndpoint;
 
   List<Musicos> get musicos => _musicos;
 

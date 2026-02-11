@@ -2,11 +2,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:sggm/models/escalas.dart';
 import 'package:http/http.dart' as http;
+import 'package:sggm/util/constants.dart';
 
 class EscalasProvider extends ChangeNotifier {
   List<Escalas> _escalas = [];
-  // final String apiUrl = 'http://127.0.0.1:8000/api/escalas/';
-  final String apiUrl = 'http://192.168.100.9:8000/api/escalas/';
+  final String apiUrl = AppConstants.escalasEndpoint;
 
   List<Escalas> get escalas => _escalas;
 

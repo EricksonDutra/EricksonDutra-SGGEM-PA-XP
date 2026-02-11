@@ -2,22 +2,20 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:sggm/models/eventos.dart';
+import 'package:sggm/util/constants.dart';
 
 class EventoProvider with ChangeNotifier {
   List<Evento> _eventos = [];
-  // final String apiUrl = 'http://127.0.0.1:8000/api/eventos/';
-  // final String apiUrl = 'http://192.168.100.9:8000/api/eventos/';
-  // static const String _baseUrl = 'http://168.227.211.82/api/eventos/';
-  static const String _baseUrl = 'http://172.19.141.245:8000/api/eventos/';
+  final String apiUrl = AppConstants.eventosEndpoint;
 
   List<Evento> get eventos => _eventos;
 
   Future<void> listarEventos() async {
     try {
-      final response = await http.get(Uri.parse(_baseUrl));
-      
+      final response = await http.get(Uri.parse(apiUrl));
+
       if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(utf8.decode(response.bodyBytes)); 
+        final List<dynamic> data = json.decode(utf8.decode(response.bodyBytes));
         _eventos = data.map((item) => Evento.fromJson(item)).toList();
         notifyListeners();
       } else {
@@ -33,7 +31,7 @@ class EventoProvider with ChangeNotifier {
   Future<void> adicionarEvento(Evento evento) async {
     try {
       final response = await http.post(
-        Uri.parse(_baseUrl),
+        Uri.parse(apiUrl),
         headers: {'Content-Type': 'application/json; charset=UTF-8'},
         body: json.encode(evento.toJson()),
       );
@@ -52,7 +50,7 @@ class EventoProvider with ChangeNotifier {
 
   Future<void> atualizarEvento(int id, Evento novoEvento) async {
     final response = await http.put(
-      Uri.parse('$_baseUrl/$id'),
+      Uri.parse('$apiUrl/$id'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode(novoEvento.toJson()),
     );
@@ -68,7 +66,7 @@ class EventoProvider with ChangeNotifier {
   }
 
   Future<void> deletarEvento(int id) async {
-    final response = await http.delete(Uri.parse('$_baseUrl$id/'));
+    final response = await http.delete(Uri.parse('$apiUrl$id/'));
     if (response.statusCode >= 200 && response.statusCode <= 299) {
       _eventos.removeWhere((evento) => evento.id == id);
       notifyListeners();
